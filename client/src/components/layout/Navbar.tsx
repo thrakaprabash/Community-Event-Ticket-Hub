@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Ticket, Calendar, ShieldCheck, LogOut, ChevronDown } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
@@ -25,7 +25,7 @@ export const Navbar: React.FC = () => {
               EventHub
             </span>
             <span className="hidden sm:inline-block ml-2 px-2 py-0.5 text-xs font-semibold bg-indigo-50 text-indigo-700 rounded-full border border-indigo-200/60">
-              WSO2 Asgardeo B2B
+              Multi-Tenant Portal
             </span>
           </div>
         </Link>
@@ -59,7 +59,7 @@ export const Navbar: React.FC = () => {
                   <div className="absolute right-0 mt-1 w-56 bg-white border border-slate-200 rounded-xl shadow-lg hidden group-hover:block p-1 z-50">
                     <div className="px-3 py-2 border-b border-slate-100">
                       <p className="text-[11px] uppercase tracking-wider font-bold text-slate-400">
-                        Switch Tenant (Asgardeo Org)
+                        Switch Organization Workspace
                       </p>
                     </div>
                     {orgList.map((org) => (

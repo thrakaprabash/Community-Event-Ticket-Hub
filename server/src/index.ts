@@ -1,4 +1,4 @@
-﻿import express from 'express';
+import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import { connectDB } from './config/db.js';
@@ -11,7 +11,7 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// CORS setup for local dev and Choreo production
+// CORS setup for local dev, Vercel frontend, and production
 const allowedOrigins = [
   'http://localhost:5173',
   'http://localhost:3000',
@@ -21,11 +21,11 @@ const allowedOrigins = [
 app.use(
   cors({
     origin: (origin, callback) => {
-      // allow requests with no origin (like mobile apps, curl, choreo internal health probes)
-      if (!origin || allowedOrigins.includes(origin) || origin.endsWith('.choreoapps.dev')) {
+      // allow requests with no origin or matching configured origins / vercel previews
+      if (!origin || allowedOrigins.includes(origin) || origin.endsWith('.vercel.app')) {
         return callback(null, true);
       }
-      return callback(null, true); // Permissive for interview evaluation demo
+      return callback(null, true); // Permissive for interview demo
     },
     credentials: true
   })
@@ -33,7 +33,7 @@ app.use(
 
 app.use(express.json());
 
-// Health Check endpoint (required for Choreo runtime probes)
+// Health Check endpoint (required for Render runtime probes)
 app.get('/health', (_req, res) => {
   res.status(200).json({ status: 'healthy', timestamp: new Date().toISOString() });
 });

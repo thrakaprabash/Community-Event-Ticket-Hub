@@ -1,4 +1,4 @@
-﻿import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 
 interface AuthUser {
   sub: string;
@@ -51,7 +51,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const orgUser: AuthUser = {
       sub: 'usr-organizer-01',
       name: 'Organizer Admin',
-      email: 'organizer@asgardeo.io',
+      email: 'organizer@eventhub.com',
       orgId,
       orgName,
       role: 'organizer'

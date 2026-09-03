@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ShieldCheck, Building2, UserCircle, ArrowRight } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
@@ -48,24 +48,24 @@ export const LoginPage: React.FC = () => {
             <ShieldCheck className="w-7 h-7" />
           </div>
           <h2 className="text-2xl font-extrabold text-slate-900">
-            WSO2 Asgardeo Identity Gateway
+            Event Management Portal
           </h2>
           <p className="text-xs text-slate-500 mt-1">
-            B2B Multi-Tenant Organization Workspace Authentication
+            Multi-Tenant Organizer & Host Workspace Login
           </p>
         </div>
 
-        {/* Organizer B2B Tenant Sign In Box */}
+        {/* Organizer Tenant Sign In Box */}
         <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
           <div className="flex items-center space-x-2 border-b border-slate-100 pb-3">
             <Building2 className="w-4 h-4 text-indigo-600" />
             <span className="text-xs font-bold uppercase tracking-wider text-slate-700">
-              Organizer Workspace (B2B Tenant)
+              Select Organizer Workspace
             </span>
           </div>
 
           <p className="text-xs text-slate-500">
-            Select the Asgardeo sub-organization to authenticate as that tenant. Data and analytics are strictly isolated.
+            Choose your organization account to access your events, ticketing metrics, and attendee management.
           </p>
 
           <div className="space-y-2">

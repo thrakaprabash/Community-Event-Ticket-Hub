@@ -1,8 +1,9 @@
-﻿import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Sparkles, CalendarDays } from 'lucide-react';
 import { EventCard } from '../components/discovery/EventCard';
 import { FilterPanel } from '../components/discovery/FilterPanel';
 import { EventItem } from '../types';
+import { API_BASE_URL } from '../config';
 
 export const DiscoveryPage: React.FC = () => {
   const [events, setEvents] = useState<EventItem[]>([]);
@@ -18,7 +19,7 @@ export const DiscoveryPage: React.FC = () => {
 
   // Fetch filter metadata
   useEffect(() => {
-    fetch('/api/events/meta/filters')
+    fetch(`${API_BASE_URL}/events/meta/filters`)
       .then((res) => res.json())
       .then((data) => {
         if (data.success) {
@@ -40,7 +41,7 @@ export const DiscoveryPage: React.FC = () => {
       if (dateFilter) params.append('dateFilter', dateFilter);
       if (maxPrice) params.append('maxPrice', maxPrice);
 
-      const res = await fetch(`/api/events?${params.toString()}`);
+      const res = await fetch(`${API_BASE_URL}/events?${params.toString()}`);
       const data = await res.json();
       if (data.success) {
         setEvents(data.data);
@@ -75,7 +76,7 @@ export const DiscoveryPage: React.FC = () => {
         <div className="max-w-4xl mx-auto text-center relative z-10 space-y-4">
           <div className="inline-flex items-center space-x-2 px-3 py-1 bg-white/10 backdrop-blur-md rounded-full text-xs font-semibold text-indigo-200 border border-white/10">
             <Sparkles className="w-3.5 h-3.5 text-yellow-400" />
-            <span>Multi-Tenant Event Platform • WSO2 Asgardeo & Choreo</span>
+            <span>Discover Local Experiences • Live Booking & Instant Pass</span>
           </div>
 
           <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight">

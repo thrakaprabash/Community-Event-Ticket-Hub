@@ -1,6 +1,7 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { Calendar, MapPin, Ticket, Tag, CheckCircle2, X } from 'lucide-react';
 import { EventItem } from '../../types';
+import { API_BASE_URL } from '../../config';
 
 interface EventCardProps {
   event: EventItem;
@@ -24,7 +25,7 @@ export const EventCard: React.FC<EventCardProps> = ({ event, onBookSuccess }) =>
 
     setLoading(true);
     try {
-      const res = await fetch('/api/tickets', {
+      const res = await fetch(`${API_BASE_URL}/tickets`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -136,7 +137,7 @@ export const EventCard: React.FC<EventCardProps> = ({ event, onBookSuccess }) =>
             }`}
           >
             <Ticket className="w-4 h-4" />
-            <span>{isSoldOut ? 'Sold Out' : 'Register / Mock Pay'}</span>
+            <span>{isSoldOut ? 'Sold Out' : (event.price === 0 ? 'Register for Free' : `Get Tickets ($${event.price})`)}</span>
           </button>
         </div>
       </div>
@@ -172,8 +173,8 @@ export const EventCard: React.FC<EventCardProps> = ({ event, onBookSuccess }) =>
                     <span className="font-semibold text-slate-800">{event.price === 0 ? 'Free' : `$${event.price}`}</span>
                   </div>
                   <div className="flex justify-between border-t border-slate-200 pt-1 font-bold text-indigo-700">
-                    <span>Total Mock Charge:</span>
-                    <span>${event.price * quantity}</span>
+                    <span>Total Amount:</span>
+                    <span>{event.price === 0 ? 'Free' : `$${event.price * quantity}`}</span>
                   </div>
                 </div>
 
@@ -230,13 +231,13 @@ export const EventCard: React.FC<EventCardProps> = ({ event, onBookSuccess }) =>
                       className="w-full py-2.5 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow-md transition-all flex items-center justify-center space-x-2"
                     >
                       {loading ? (
-                        <span>Processing Instant Mock Confirmation...</span>
+                        <span>Issuing Ticket Pass...</span>
                       ) : (
-                        <span>Confirm & Mock Pay (${event.price * quantity})</span>
+                        <span>{event.price === 0 ? 'Confirm Registration' : `Complete Order ($${event.price * quantity})`}</span>
                       )}
                     </button>
                     <p className="text-[11px] text-center text-slate-400 mt-2">
-                      ⚡ Mock Payment Sandbox — Instant QR Code pass generated
+                      ⚡ Instant electronic pass with admission QR code generated
                     </p>
                   </div>
                 </form>
@@ -267,7 +268,7 @@ export const EventCard: React.FC<EventCardProps> = ({ event, onBookSuccess }) =>
                 <div className="text-xs text-slate-600 space-y-1 bg-indigo-50/50 p-3 rounded-xl border border-indigo-100">
                   <p><strong>Attendee:</strong> {ticketResult.ticket.attendeeName}</p>
                   <p><strong>Quantity:</strong> {ticketResult.ticket.quantity} Ticket(s)</p>
-                  <p><strong>Status:</strong> Mock Payment Approved</p>
+                  <p><strong>Status:</strong> Confirmed & Paid</p>
                 </div>
 
                 <button

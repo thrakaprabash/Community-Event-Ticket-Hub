@@ -1,22 +1,22 @@
 ﻿# 🎟️ Community Event Ticket Hub
 
-A centralized, multi-tenant MERN-stack platform for local events—from university charity walks and tech meetups to outdoor musical shows.
+A modern, multi-tenant MERN-stack platform for local community events—from university charity walks and tech meetups to outdoor musical shows.
 
-Built with **React (TypeScript)**, **Express**, **MongoDB Atlas**, **WSO2 Asgardeo B2B Identity Management**, and **WSO2 Choreo CI/CD**.
+Built with **React (TypeScript)**, **TailwindCSS**, **Express (TypeScript)**, and **MongoDB Atlas**.
 
 ---
 
 ## ✨ Features
 
 - **Public Discovery Page**: Full-text search and real-time filtering by category (Tech, Music, University, Sports), city, date range, and free/paid status.
-- **Mock Ticket Registration**: Instant ticket pass generation with dynamic Base64 QR code rendering without real payment gateway friction.
-- **Chart-Heavy Organizer Dashboard**: Real-time Recharts visualizations:
+- **Instant Ticket Pass Generation**: Seamless electronic ticket reservation with scannable Base64 QR code passes.
+- **Analytics & Organizer Dashboard**: Interactive real-time visualizations powered by Recharts:
   - 📈 30-Day Registration volume line chart
   - 📊 Revenue by event bar chart
   - 🍩 Category distribution donut chart
   - 📋 Real-time attendee gate check-in roster
-- **WSO2 Asgardeo B2B Multi-Tenancy**: Isolated sub-organization tenant workspaces for different event organizers (e.g. *TechConf Global*, *SoundWave Productions*, *University Council*).
-- **WSO2 Choreo CI/CD**: Cloud-native continuous integration and deployment with `.choreo/` descriptors.
+- **Multi-Tenant Organization Workspaces**: Isolated tenant workspaces for different event organizers (e.g. *TechConf Global*, *SoundWave Productions*, *University Council*).
+- **Vercel & Render.com Deployments**: Pre-configured with `vercel.json` for frontend and `render.yaml` for backend deployment with automated GitHub CI/CD on every push.
 
 ---
 
@@ -46,7 +46,7 @@ npm run seed
 ```
 
 ### 4. Run Development Servers
-Open two terminals or run concurrently:
+Open two terminals:
 ```bash
 # Terminal 1: Backend Server (Port 5000)
 cd server
@@ -61,30 +61,37 @@ Visit **`http://localhost:5173`** in your browser.
 
 ---
 
-## 🏢 WSO2 Asgardeo B2B Setup Guide
+## 🏢 Multi-Tenant Workspace & Authentication
 
-1. Sign up for a free account at [asgardeo.io](https://asgardeo.io).
-2. Create your root organization (e.g., `community-event-hub`).
-3. Under **Applications**, create a Single Page Application (SPA) for attendees (`http://localhost:5173`).
-4. Under **Organizations**, create sub-organizations for event organizers (e.g., `TechConf-Inc`, `SoundWave-Productions`).
-5. Configure `ASGARDEO_JWKS_URI` in `server/.env` with your organization endpoint:
-   `https://api.asgardeo.io/t/<your-root-org>/oauth2/jwks`
+The application features workspace tenant isolation. Organizers can authenticate into their dedicated workspace to view only their organization's events, revenues, and attendees. 
+
+1. **Development Mode**: Click any organization profile (*TechConf Global*, *SoundWave Productions*, *University Council*) on the sign-in page to test tenant switching instantly.
+2. **Production Mode (Optional Asgardeo/OIDC)**: Configure `ASGARDEO_JWKS_URI` in `server/.env` with your OAuth2 JWKS endpoint to cryptographically validate live JWT tokens.
 
 ---
 
-## ☁️ WSO2 Choreo CI/CD Auto-Deployment Guide
+## 🌐 Deployment Guide (Vercel + Render.com)
 
-1. Log into [console.choreo.dev](https://console.choreo.dev) and create a project: `community-event-ticket-hub`.
+### 1. Deploy Backend to Render.com (Free Tier)
+1. Go to [render.com](https://render.com) and create a **New Web Service**.
 2. Connect your GitHub repository.
-3. Add **Backend Component**:
-   - Component Type: **REST API / Service**
-   - Path: `/server`
-   - Buildpack: **NodeJS**
-   - Port: `5000`
-4. Add **Frontend Component**:
-   - Component Type: **Web Application**
-   - Path: `/client`
-   - Buildpack: **NodeJS**
-   - Build command: `npm run build`
-   - Output directory: `dist`
-5. Every `git push` to `main` automatically triggers Choreo to build and deploy the latest live build!
+3. Settings:
+   - **Root Directory**: `server`
+   - **Build Command**: `npm install && npm run build`
+   - **Start Command**: `node dist/index.js`
+4. Add Environment Variables in the Render dashboard:
+   - `MONGODB_URI`: Your MongoDB Atlas connection string
+   - `NODE_ENV`: `production`
+   - `CLIENT_ORIGIN`: Your Vercel frontend URL (e.g., `https://your-project.vercel.app`)
+5. Copy your Render service URL (e.g., `https://event-hub-api.onrender.com`).
+
+### 2. Deploy Frontend to Vercel
+1. Go to [vercel.com](https://vercel.com) and click **Add New Project**.
+2. Import this GitHub repository.
+3. Settings:
+   - **Root Directory**: `client`
+   - **Framework Preset**: Vite
+4. Add Environment Variable in the Vercel dashboard:
+   - `VITE_API_BASE_URL`: `https://event-hub-api.onrender.com/api` (your Render URL + `/api`)
+   - `VITE_REDIRECT_URL`: `https://your-project.vercel.app`
+5. Click **Deploy**. Vercel will build the frontend and provide your live URL.

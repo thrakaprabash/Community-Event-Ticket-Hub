@@ -1,4 +1,4 @@
-﻿import { Schema, model, Document, Types } from 'mongoose';
+import { Schema, model, Document, Types } from 'mongoose';
 
 export interface ITicket extends Document {
   eventId: Types.ObjectId;
@@ -12,6 +12,8 @@ export interface ITicket extends Document {
   paymentStatus: 'mock_paid' | 'pending' | 'cancelled';
   qrCode: string;
   purchasedAt: Date;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 const ticketSchema = new Schema<ITicket>(
