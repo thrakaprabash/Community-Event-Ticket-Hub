@@ -32,7 +32,7 @@ export const Navbar: React.FC = () => {
 
         <nav className="flex items-center space-x-3 sm:space-x-5">
           <Link
-            to="/"
+            to="/discover"
             className="text-sm font-medium text-slate-600 hover:text-indigo-600 flex items-center space-x-1"
           >
             <Calendar className="w-4 h-4" />
