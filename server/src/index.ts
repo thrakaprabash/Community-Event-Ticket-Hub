@@ -5,6 +5,7 @@ import { connectDB } from './config/db.js';
 import { eventsRouter } from './routes/events.js';
 import { ticketsRouter } from './routes/tickets.js';
 import { analyticsRouter } from './routes/analytics.js';
+import { organizationsRouter } from './routes/organizations.js';
 
 dotenv.config();
 
@@ -76,6 +77,9 @@ app.use('/tickets', ticketsRouter);
 
 app.use('/api/analytics', analyticsRouter);
 app.use('/analytics', analyticsRouter);
+
+app.use('/api/organizations', organizationsRouter);
+app.use('/organizations', organizationsRouter);
 
 // Global 404 Handler
 app.use((_req, res) => {
