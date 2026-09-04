@@ -1,4 +1,4 @@
-﻿import express from 'express';
+import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import { connectDB } from './config/db.js';
@@ -25,7 +25,7 @@ app.use(
       if (!origin || allowedOrigins.includes(origin) || origin.endsWith('.vercel.app')) {
         return callback(null, true);
       }
-      return callback(null, true); // Permissive for interview demo
+      return callback(null, true); // Permissive for demo
     },
     credentials: true
   })
@@ -33,7 +33,7 @@ app.use(
 
 app.use(express.json());
 
-// Ensure DB is connected before handling any API request (Serverless & Long-running safe)
+// Ensure DB is connected before handling any API request
 app.use(async (_req, _res, next) => {
   await connectDB();
   next();
@@ -41,6 +41,10 @@ app.use(async (_req, _res, next) => {
 
 // Health Check endpoint
 app.get('/health', (_req, res) => {
+  res.status(200).json({ status: 'healthy', timestamp: new Date().toISOString() });
+});
+
+app.get('/api/health', (_req, res) => {
   res.status(200).json({ status: 'healthy', timestamp: new Date().toISOString() });
 });
 
@@ -54,10 +58,24 @@ app.get('/', (_req, res) => {
   });
 });
 
-// API Routes
+app.get('/api', (_req, res) => {
+  res.json({
+    name: 'Community Event Ticket Hub API',
+    version: '1.0.0',
+    docs: '/api/events',
+    status: 'online'
+  });
+});
+
+// Mount routes on BOTH /api/* and root /* to support both Vercel Serverless Function & Standalone Express
 app.use('/api/events', eventsRouter);
+app.use('/events', eventsRouter);
+
 app.use('/api/tickets', ticketsRouter);
+app.use('/tickets', ticketsRouter);
+
 app.use('/api/analytics', analyticsRouter);
+app.use('/analytics', analyticsRouter);
 
 // Global 404 Handler
 app.use((_req, res) => {
