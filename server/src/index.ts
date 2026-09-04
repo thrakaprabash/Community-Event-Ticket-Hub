@@ -12,22 +12,19 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Universal Permissive CORS & Preflight Handler for Vercel Serverless
-app.use((req, res, next) => {
-  const origin = req.headers.origin || '*';
-  res.setHeader('Access-Control-Allow-Origin', origin);
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With, Content-Type, Accept, Authorization, Cache-Control');
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
+// Universal Permissive CORS middleware
+app.use(
+  cors({
+    origin: true,
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Cache-Control', 'Origin'],
+    optionsSuccessStatus: 200,
+  })
+);
 
-  if (req.method === 'OPTIONS') {
-    res.status(200).end();
-    return;
-  }
-  next();
-});
+app.options('*', cors());
 
-app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
 
 // Ensure DB is connected before handling any API request
@@ -36,7 +33,7 @@ app.use(async (_req, _res, next) => {
   next();
 });
 
-// Health Check endpoint
+// Health Check endpoints
 app.get('/health', (_req, res) => {
   res.status(200).json({ status: 'healthy', timestamp: new Date().toISOString() });
 });
@@ -45,13 +42,13 @@ app.get('/api/health', (_req, res) => {
   res.status(200).json({ status: 'healthy', timestamp: new Date().toISOString() });
 });
 
-// Root API Welcome endpoint
+// Root API Welcome endpoints
 app.get('/', (_req, res) => {
   res.json({
     name: 'Community Event Ticket Hub API',
     version: '1.0.0',
     docs: '/api/events',
-    status: 'online'
+    status: 'online',
   });
 });
 
@@ -60,7 +57,7 @@ app.get('/api', (_req, res) => {
     name: 'Community Event Ticket Hub API',
     version: '1.0.0',
     docs: '/api/events',
-    status: 'online'
+    status: 'online',
   });
 });
 
