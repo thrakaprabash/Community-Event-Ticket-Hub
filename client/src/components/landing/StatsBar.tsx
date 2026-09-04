@@ -16,7 +16,7 @@ export const StatsBar: React.FC = () => {
   const [stats, setStats] = useState<LiveStats>({
     eventsCount: 0,
     ticketsCount: 0,
-    orgsCount: 3,
+    orgsCount: 0,
   });
   const [isLoaded, setIsLoaded] = useState(false);
 
@@ -24,24 +24,24 @@ export const StatsBar: React.FC = () => {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const [eventsRes, metaRes] = await Promise.all([
+        const [eventsRes, orgsRes] = await Promise.all([
           fetch(`${API_BASE_URL}/events`),
-          fetch(`${API_BASE_URL}/events/meta/filters`),
+          fetch(`${API_BASE_URL}/organizations`),
         ]);
         const eventsData = await eventsRes.json();
-        const metaData = await metaRes.json();
+        const orgsData = await orgsRes.json();
 
         let totalTickets = 0;
         let totalEvts = 0;
         if (eventsData.success && Array.isArray(eventsData.data)) {
-          totalEvts = eventsData.data.length;
+          totalEvts = eventsData.pagination?.total ?? eventsData.data.length;
           totalTickets = eventsData.data.reduce(
             (acc: number, curr: any) => acc + (curr.ticketsSold || 0),
             0
           );
         }
 
-        const orgs = metaData?.data?.categories?.length || 3;
+        const orgs = (orgsData.success && Array.isArray(orgsData.data)) ? orgsData.data.length : 0;
 
         setStats({
           eventsCount: totalEvts,
@@ -98,14 +98,14 @@ export const StatsBar: React.FC = () => {
         {/* Stat 3 */}
         <div className="flex items-center space-x-4 pt-4 sm:pt-0 sm:pl-8">
           <div className="w-12 h-12 rounded-xl bg-amber-50 border border-amber-100 flex items-center justify-center text-amber-600">
-            <Sparkles className="w-6 h-6" />
+            <Building2 className="w-6 h-6" />
           </div>
           <div>
             <div className="text-2xl sm:text-3xl font-extrabold text-slate-900">
-              100%
+              {isLoaded ? `${stats.orgsCount}` : '...'}
             </div>
             <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">
-              Instant QR Verification
+              Host Organizations
             </p>
           </div>
         </div>

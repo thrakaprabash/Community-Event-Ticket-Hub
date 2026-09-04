@@ -48,10 +48,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [token]);
 
   const loginAsOrganizer = (orgId: string, orgName: string) => {
+    const slug = orgId.toLowerCase().replace(/[^a-z0-9]/g, '');
     const orgUser: AuthUser = {
-      sub: 'usr-organizer-01',
-      name: 'Organizer Admin',
-      email: 'organizer@eventhub.com',
+      sub: `usr-${orgId}`,
+      name: `${orgName} Admin`,
+      email: `admin@${slug || 'org'}.com`,
       orgId,
       orgName,
       role: 'organizer'
@@ -62,11 +63,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const loginAsAttendee = () => {
     const attendeeUser: AuthUser = {
-      sub: 'usr-attendee-01',
-      name: 'Public Attendee',
-      email: 'attendee@gmail.com',
-      orgId: 'root-attendees',
-      orgName: 'Public Event Community',
+      sub: 'usr-attendee',
+      name: 'Community Attendee',
+      email: 'attendee@community.hub',
+      orgId: 'public-attendees',
+      orgName: 'Community Attendee',
       role: 'attendee'
     };
     setUser(attendeeUser);

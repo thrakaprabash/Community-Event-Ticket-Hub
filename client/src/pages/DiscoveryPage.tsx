@@ -31,8 +31,8 @@ export const DiscoveryPage: React.FC = () => {
   }, []);
 
   // Fetch events with active filters
-  const fetchEvents = async () => {
-    setLoading(true);
+  const fetchEvents = async (silent: boolean = false) => {
+    if (!silent) setLoading(true);
     try {
       const params = new URLSearchParams();
       if (search) params.append('search', search);
@@ -49,7 +49,7 @@ export const DiscoveryPage: React.FC = () => {
     } catch (error) {
       console.error('Error fetching events:', error);
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
   };
 
@@ -134,7 +134,7 @@ export const DiscoveryPage: React.FC = () => {
         ) : events.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {events.map((event) => (
-              <EventCard key={event._id} event={event} onBookSuccess={fetchEvents} />
+              <EventCard key={event._id} event={event} onBookSuccess={() => fetchEvents(true)} />
             ))}
           </div>
         ) : (

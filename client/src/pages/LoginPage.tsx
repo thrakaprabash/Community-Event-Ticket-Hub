@@ -12,8 +12,8 @@ export const LoginPage: React.FC = () => {
   const [orgs, setOrgs] = useState<OrganizationItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedOrg, setSelectedOrg] = useState<{ id: string; name: string }>({
-    id: 'org-techconf',
-    name: 'TechConf Global Ltd',
+    id: '',
+    name: '',
   });
 
   // State for creating a new custom organization
@@ -31,38 +31,18 @@ export const LoginPage: React.FC = () => {
       const data = await res.json();
       if (data.success && Array.isArray(data.data) && data.data.length > 0) {
         setOrgs(data.data);
-        // Default select the first org if none selected or not matching
         setSelectedOrg({
           id: data.data[0].orgId,
           name: data.data[0].name,
         });
       } else {
-        // Fallback default set if database is not yet seeded
-        const fallbackOrgs: OrganizationItem[] = [
-          {
-            orgId: 'org-techconf',
-            name: 'TechConf Global Ltd',
-            description: 'Tech meetups, developer summits & software hackathons',
-            category: 'Tech',
-          },
-          {
-            orgId: 'org-soundwave',
-            name: 'SoundWave Productions',
-            description: 'Concerts, beachside acoustic nights & outdoor musical festivals',
-            category: 'Music',
-          },
-          {
-            orgId: 'org-unicouncil',
-            name: 'University Student Council',
-            description: 'Campus 5K charity walks, collegiate codeathons & club gatherings',
-            category: 'University',
-          },
-        ];
-        setOrgs(fallbackOrgs);
-        setSelectedOrg({ id: fallbackOrgs[0].orgId, name: fallbackOrgs[0].name });
+        setOrgs([]);
+        setSelectedOrg({ id: '', name: '' });
       }
     } catch (err) {
       console.error('Failed to fetch organizations:', err);
+      setOrgs([]);
+      setSelectedOrg({ id: '', name: '' });
     } finally {
       setLoading(false);
     }
@@ -157,7 +137,7 @@ export const LoginPage: React.FC = () => {
               <RefreshCw className="w-5 h-5 animate-spin text-indigo-600" />
               <span className="text-xs">Loading registered organizations...</span>
             </div>
-          ) : (
+          ) : orgs.length > 0 ? (
             <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
               {orgs.map((org) => (
                 <label
@@ -187,14 +167,34 @@ export const LoginPage: React.FC = () => {
                 </label>
               ))}
             </div>
+          ) : (
+            <div className="py-6 px-4 bg-slate-50 border border-dashed border-slate-300 rounded-xl text-center space-y-3">
+              <div className="w-9 h-9 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center mx-auto">
+                <Building2 className="w-5 h-5" />
+              </div>
+              <div>
+                <p className="text-xs font-bold text-slate-800">No Organizations Registered</p>
+                <p className="text-[11px] text-slate-500 mt-0.5">
+                  Register your real organization workspace to begin hosting events and managing ticket sales.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowCreateModal(true)}
+                className="inline-flex items-center space-x-1 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-lg transition-colors shadow-sm"
+              >
+                <PlusCircle className="w-3.5 h-3.5" />
+                <span>Register Organization</span>
+              </button>
+            </div>
           )}
 
           <button
             onClick={handleOrganizerSignIn}
             disabled={!selectedOrg.id || loading}
-            className="w-full py-2.5 px-4 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white text-xs font-bold rounded-xl shadow-sm hover:shadow transition-all flex items-center justify-center space-x-2"
+            className="w-full py-2.5 px-4 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs font-bold rounded-xl shadow-sm hover:shadow transition-all flex items-center justify-center space-x-2"
           >
-            <span>Authenticate into {selectedOrg.name}</span>
+            <span>{selectedOrg.name ? `Authenticate into ${selectedOrg.name}` : 'Select an Organization'}</span>
             <ArrowRight className="w-4 h-4" />
           </button>
         </div>

@@ -9,26 +9,26 @@ export const Navbar: React.FC = () => {
   const { isAuthenticated, user, logout, switchOrganization } = useAuth();
   const navigate = useNavigate();
 
-  const [orgList, setOrgList] = useState<{ id: string; name: string }[]>([
-    { id: 'org-techconf', name: 'TechConf Global Ltd' },
-    { id: 'org-soundwave', name: 'SoundWave Productions' },
-    { id: 'org-unicouncil', name: 'University Student Council' }
-  ]);
+  const [orgList, setOrgList] = useState<{ id: string; name: string }[]>([]);
 
   useEffect(() => {
     fetch(`${API_BASE_URL}/organizations`)
       .then((res) => res.json())
       .then((data) => {
-        if (data.success && Array.isArray(data.data) && data.data.length > 0) {
+        if (data.success && Array.isArray(data.data)) {
           setOrgList(
             data.data.map((o: OrganizationItem) => ({
               id: o.orgId,
               name: o.name,
             }))
           );
+        } else {
+          setOrgList([]);
         }
       })
-      .catch(() => {});
+      .catch(() => {
+        setOrgList([]);
+      });
   }, []);
 
   return (
@@ -80,19 +80,31 @@ export const Navbar: React.FC = () => {
                         Switch Organization Workspace
                       </p>
                     </div>
-                    {orgList.map((org) => (
-                      <button
-                        key={org.id}
-                        onClick={() => switchOrganization(org.id, org.name)}
-                        className={`w-full text-left px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
-                          user.orgId === org.id
-                            ? 'bg-indigo-50 text-indigo-700 font-semibold'
-                            : 'text-slate-600 hover:bg-slate-50'
-                        }`}
+                    {orgList.length > 0 ? (
+                      orgList.map((org) => (
+                        <button
+                          key={org.id}
+                          onClick={() => switchOrganization(org.id, org.name)}
+                          className={`w-full text-left px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
+                            user.orgId === org.id
+                              ? 'bg-indigo-50 text-indigo-700 font-semibold'
+                              : 'text-slate-600 hover:bg-slate-50'
+                          }`}
+                        >
+                          {org.name}
+                        </button>
+                      ))
+                    ) : (
+                      <div className="px-3 py-2 text-xs text-slate-400">No other workspaces</div>
+                    )}
+                    <div className="border-t border-slate-100 mt-1 pt-1">
+                      <Link
+                        to="/login"
+                        className="w-full block text-left px-3 py-1.5 rounded-lg text-xs font-semibold text-indigo-600 hover:bg-indigo-50"
                       >
-                        {org.name}
-                      </button>
-                    ))}
+                        + Register / Switch
+                      </Link>
+                    </div>
                   </div>
                 </div>
               )}

@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
-import { Calendar, MapPin, Ticket, Tag, CheckCircle2, X } from 'lucide-react';
+import { Calendar, MapPin, Ticket, Tag, CheckCircle2, X, Edit, Trash2, AlertTriangle, ShieldCheck, Download, QrCode } from 'lucide-react';
 import { EventItem } from '../../types';
 import { API_BASE_URL } from '../../config';
+import { useAuth } from '../../context/AuthContext';
+import { EditEventModal } from '../dashboard/EditEventModal';
 
 interface EventCardProps {
   event: EventItem;
@@ -9,6 +11,7 @@ interface EventCardProps {
 }
 
 export const EventCard: React.FC<EventCardProps> = ({ event, onBookSuccess }) => {
+  const { user, token } = useAuth();
   const [modalOpen, setModalOpen] = useState(false);
   const [quantity, setQuantity] = useState(1);
   const [attendeeName, setAttendeeName] = useState('');
@@ -16,8 +19,50 @@ export const EventCard: React.FC<EventCardProps> = ({ event, onBookSuccess }) =>
   const [loading, setLoading] = useState(false);
   const [ticketResult, setTicketResult] = useState<any>(null);
 
+  // Edit and Delete state for organizers owning this event
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+
+  const isOwner = user?.role === 'organizer' && user.orgId === event.organizationId;
+
+  const handleDelete = async (cancelOnly: boolean = false) => {
+    setDeleteLoading(true);
+    try {
+      const res = await fetch(
+        `${API_BASE_URL}/events/${event._id}${cancelOnly ? '?cancel=true' : ''}`,
+        {
+          method: 'DELETE',
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }
+      );
+      const data = await res.json();
+      if (data.success) {
+        setDeleteConfirmOpen(false);
+        if (onBookSuccess) onBookSuccess();
+      } else {
+        alert(data.message || 'Failed to delete event');
+      }
+    } catch {
+      alert('Error deleting event');
+    } finally {
+      setDeleteLoading(false);
+    }
+  };
+
   const availableTickets = Math.max(0, event.capacity - event.ticketsSold);
   const isSoldOut = availableTickets <= 0;
+
+  const handleClosePass = () => {
+    setModalOpen(false);
+    setTicketResult(null);
+    setAttendeeName('');
+    setAttendeeEmail('');
+    setQuantity(1);
+    if (onBookSuccess) onBookSuccess();
+  };
 
   const handleBooking = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,7 +84,6 @@ export const EventCard: React.FC<EventCardProps> = ({ event, onBookSuccess }) =>
       const data = await res.json();
       if (data.success) {
         setTicketResult(data.data);
-        if (onBookSuccess) onBookSuccess();
       } else {
         alert(data.message || 'Booking failed');
       }
@@ -82,6 +126,12 @@ export const EventCard: React.FC<EventCardProps> = ({ event, onBookSuccess }) =>
             >
               {event.category}
             </span>
+            {isOwner && (
+              <span className="px-2 py-1 text-xs font-bold rounded-lg border backdrop-blur-md bg-indigo-600/90 text-white flex items-center space-x-1 shadow-sm">
+                <ShieldCheck className="w-3 h-3" />
+                <span>Your Event</span>
+              </span>
+            )}
           </div>
           <div className="absolute top-3 right-3">
             <span className="px-3 py-1 text-xs font-bold rounded-lg shadow-sm bg-slate-900/80 text-white backdrop-blur-md">
@@ -127,18 +177,41 @@ export const EventCard: React.FC<EventCardProps> = ({ event, onBookSuccess }) =>
             </div>
           </div>
 
-          <button
-            onClick={() => setModalOpen(true)}
-            disabled={isSoldOut}
-            className={`mt-4 w-full py-2.5 px-4 rounded-xl text-xs font-bold flex items-center justify-center space-x-2 transition-all shadow-sm ${
-              isSoldOut
-                ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
-                : 'bg-indigo-600 hover:bg-indigo-700 text-white hover:shadow-indigo-200'
-            }`}
-          >
-            <Ticket className="w-4 h-4" />
-            <span>{isSoldOut ? 'Sold Out' : (event.price === 0 ? 'Register for Free' : `Get Tickets ($${event.price})`)}</span>
-          </button>
+          <div className="mt-4 space-y-2">
+            <button
+              onClick={() => setModalOpen(true)}
+              disabled={isSoldOut}
+              className={`w-full py-2.5 px-4 rounded-xl text-xs font-bold flex items-center justify-center space-x-2 transition-all shadow-sm ${
+                isSoldOut
+                  ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                  : 'bg-indigo-600 hover:bg-indigo-700 text-white hover:shadow-indigo-200'
+              }`}
+            >
+              <Ticket className="w-4 h-4" />
+              <span>{isSoldOut ? 'Sold Out' : (event.price === 0 ? 'Register for Free' : `Get Tickets ($${event.price})`)}</span>
+            </button>
+
+            {isOwner && (
+              <div className="pt-2 border-t border-slate-100 flex items-center space-x-2">
+                <button
+                  type="button"
+                  onClick={() => setEditModalOpen(true)}
+                  className="flex-1 py-1.5 px-3 rounded-xl text-xs font-bold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 flex items-center justify-center space-x-1.5 transition-colors border border-indigo-100"
+                >
+                  <Edit className="w-3.5 h-3.5" />
+                  <span>Edit</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setDeleteConfirmOpen(true)}
+                  className="flex-1 py-1.5 px-3 rounded-xl text-xs font-bold text-rose-600 bg-rose-50 hover:bg-rose-100 flex items-center justify-center space-x-1.5 transition-colors border border-rose-100"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  <span>Delete</span>
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
@@ -147,10 +220,7 @@ export const EventCard: React.FC<EventCardProps> = ({ event, onBookSuccess }) =>
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fadeIn">
           <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl relative border border-slate-100">
             <button
-              onClick={() => {
-                setModalOpen(false);
-                setTicketResult(null);
-              }}
+              onClick={handleClosePass}
               className="absolute top-4 right-4 p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100"
             >
               <X className="w-5 h-5" />
@@ -188,7 +258,7 @@ export const EventCard: React.FC<EventCardProps> = ({ event, onBookSuccess }) =>
                       required
                       value={attendeeName}
                       onChange={(e) => setAttendeeName(e.target.value)}
-                      placeholder="e.g. Kasun Silva"
+                      placeholder="Your full name"
                       className="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
                     />
                   </div>
@@ -254,34 +324,124 @@ export const EventCard: React.FC<EventCardProps> = ({ event, onBookSuccess }) =>
                   Your ticket pass has been issued for <strong>{event.title}</strong>
                 </p>
 
-                <div className="my-4 p-4 bg-slate-50 rounded-2xl border border-slate-200 inline-block">
+                <div className="my-3 p-4 bg-white rounded-2xl border-2 border-indigo-100 shadow-inner inline-block">
                   <img
                     src={ticketResult.ticket.qrCode}
-                    alt="Ticket QR Code"
-                    className="w-40 h-40 mx-auto rounded-lg shadow-sm"
+                    alt="Admission QR Code"
+                    className="w-44 h-44 mx-auto rounded-xl shadow-sm border border-slate-100"
                   />
                   <p className="text-[10px] font-mono text-slate-500 mt-2 uppercase tracking-wider">
-                    Scan for Venue Admission
+                    Scan for Venue Gate Check-In
                   </p>
                 </div>
 
-                <div className="text-xs text-slate-600 space-y-1 bg-indigo-50/50 p-3 rounded-xl border border-indigo-100">
-                  <p><strong>Attendee:</strong> {ticketResult.ticket.attendeeName}</p>
-                  <p><strong>Quantity:</strong> {ticketResult.ticket.quantity} Ticket(s)</p>
-                  <p><strong>Status:</strong> Confirmed & Paid</p>
+                <div className="text-xs text-slate-600 space-y-1.5 bg-slate-50 p-3.5 rounded-xl border border-slate-200 text-left">
+                  <div className="flex justify-between border-b border-slate-200/60 pb-1.5">
+                    <span className="text-slate-500">Pass Reference:</span>
+                    <span className="font-mono font-bold text-indigo-700">
+                      {ticketResult.ticket._id?.substring(18)?.toUpperCase() || 'PASS-OK'}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-500">Attendee:</span>
+                    <span className="font-semibold text-slate-800">{ticketResult.ticket.attendeeName}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-500">Quantity:</span>
+                    <span className="font-bold text-indigo-600">{ticketResult.ticket.quantity} Ticket(s)</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-500">Status:</span>
+                    <span className="font-bold text-emerald-600">Confirmed (Instant Pass)</span>
+                  </div>
                 </div>
 
-                <button
-                  onClick={() => {
-                    setModalOpen(false);
-                    setTicketResult(null);
-                  }}
-                  className="mt-4 w-full py-2 bg-slate-900 text-white rounded-xl text-xs font-semibold hover:bg-slate-800"
-                >
-                  Close Pass
-                </button>
+                <div className="mt-4 flex gap-2">
+                  <a
+                    href={ticketResult.ticket.qrCode}
+                    download={`${event.title.replace(/[^a-zA-Z0-9]/g, '_')}_QR_Pass.png`}
+                    className="flex-1 py-2 px-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition-colors flex items-center justify-center space-x-1.5 shadow-sm"
+                  >
+                    <Download className="w-3.5 h-3.5" />
+                    <span>Download QR Pass</span>
+                  </a>
+                  <button
+                    onClick={handleClosePass}
+                    className="py-2 px-4 bg-slate-100 text-slate-700 rounded-xl text-xs font-semibold hover:bg-slate-200 transition-colors"
+                  >
+                    Done
+                  </button>
+                </div>
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Organizer Edit Modal */}
+      {isOwner && (
+        <EditEventModal
+          isOpen={editModalOpen}
+          event={event}
+          onClose={() => setEditModalOpen(false)}
+          onSuccess={() => {
+            if (onBookSuccess) onBookSuccess();
+          }}
+        />
+      )}
+
+      {/* Organizer Delete Confirmation Modal */}
+      {isOwner && deleteConfirmOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fadeIn">
+          <div className="bg-white rounded-2xl max-w-sm w-full p-5 shadow-2xl relative border border-slate-100">
+            <button
+              onClick={() => setDeleteConfirmOpen(false)}
+              className="absolute top-4 right-4 p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="flex items-center space-x-2.5 mb-3">
+              <div className="w-9 h-9 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center flex-shrink-0">
+                <AlertTriangle className="w-4 h-4" />
+              </div>
+              <div>
+                <h3 className="text-sm font-bold text-slate-900">Delete Event</h3>
+                <p className="text-[11px] text-slate-500">Remove listing from discovery</p>
+              </div>
+            </div>
+
+            <p className="text-xs text-slate-600 mb-4 leading-relaxed">
+              Are you sure you want to delete <strong>{event.title}</strong>? This action cannot be reversed.
+            </p>
+
+            <div className="space-y-2">
+              <button
+                type="button"
+                disabled={deleteLoading}
+                onClick={() => handleDelete(false)}
+                className="w-full py-2 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs rounded-xl transition-colors disabled:opacity-50"
+              >
+                {deleteLoading ? 'Deleting...' : 'Delete Permanently'}
+              </button>
+
+              <button
+                type="button"
+                disabled={deleteLoading}
+                onClick={() => handleDelete(true)}
+                className="w-full py-2 bg-amber-50 hover:bg-amber-100 text-amber-800 font-semibold text-xs rounded-xl border border-amber-200 transition-colors disabled:opacity-50"
+              >
+                Mark as Cancelled
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setDeleteConfirmOpen(false)}
+                className="w-full py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs rounded-xl transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
           </div>
         </div>
       )}

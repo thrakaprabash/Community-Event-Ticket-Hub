@@ -1,4 +1,4 @@
-﻿import { Router, Request, Response } from 'express';
+import { Router, Request, Response } from 'express';
 import { Event } from '../models/Event.js';
 import { verifyAsgardeoToken, AuthenticatedRequest } from '../middleware/verifyToken.js';
 import { requireOrgScope } from '../middleware/requireOrg.js';
@@ -170,11 +170,41 @@ eventsRouter.put('/:id', verifyAsgardeoToken, requireOrgScope, async (req: Authe
       return;
     }
 
-    Object.assign(event, req.body);
+    const { title, description, category, date, time, venue, city, capacity, price, tags, imageUrl, status } = req.body;
+
+    if (capacity !== undefined) {
+      const capNum = Number(capacity);
+      if (isNaN(capNum) || capNum < 1) {
+        res.status(400).json({ success: false, message: 'Capacity must be at least 1' });
+        return;
+      }
+      if (capNum < event.ticketsSold) {
+        res.status(400).json({
+          success: false,
+          message: `Capacity cannot be less than tickets already sold (${event.ticketsSold})`
+        });
+        return;
+      }
+      event.capacity = capNum;
+    }
+
+    if (title !== undefined) event.title = title.trim();
+    if (description !== undefined) event.description = description;
+    if (category !== undefined) event.category = category;
+    if (date !== undefined) event.date = new Date(date);
+    if (time !== undefined) event.time = time;
+    if (venue !== undefined) event.venue = venue;
+    if (city !== undefined) event.city = city;
+    if (price !== undefined) event.price = Math.max(0, Number(price) || 0);
+    if (tags !== undefined) event.tags = Array.isArray(tags) ? tags : [];
+    if (imageUrl !== undefined) event.imageUrl = imageUrl;
+    if (status !== undefined) event.status = status;
+
     await event.save();
 
     res.json({ success: true, data: event });
   } catch (error) {
+    console.error('[Events] Error updating event:', error);
     res.status(500).json({ success: false, message: 'Failed to update event' });
   }
 });
@@ -190,11 +220,18 @@ eventsRouter.delete('/:id', verifyAsgardeoToken, requireOrgScope, async (req: Au
       return;
     }
 
-    event.status = 'cancelled';
-    await event.save();
+    // If cancel=true is requested, mark as cancelled; otherwise permanently delete
+    if (req.query.cancel === 'true') {
+      event.status = 'cancelled';
+      await event.save();
+      res.json({ success: true, message: 'Event marked as cancelled' });
+      return;
+    }
 
-    res.json({ success: true, message: 'Event marked as cancelled' });
+    await Event.deleteOne({ _id: req.params.id, organizationId: orgId });
+    res.json({ success: true, message: 'Event deleted successfully' });
   } catch (error) {
+    console.error('[Events] Error deleting event:', error);
     res.status(500).json({ success: false, message: 'Failed to delete event' });
   }
 });

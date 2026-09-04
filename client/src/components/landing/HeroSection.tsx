@@ -1,9 +1,28 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'motion/react';
-import { Sparkles, ArrowRight, ShieldCheck, Ticket, Calendar, MapPin, Users } from 'lucide-react';
+import { Sparkles, ArrowRight, ShieldCheck, Ticket, Calendar, MapPin, Users, PlusCircle } from 'lucide-react';
+import { API_BASE_URL } from '../../config';
+import { EventItem } from '../../types';
 
 export const HeroSection: React.FC = () => {
+  const [featuredEvent, setFeaturedEvent] = useState<EventItem | null>(null);
+
+  useEffect(() => {
+    fetch(`${API_BASE_URL}/events?limit=1`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && Array.isArray(data.data) && data.data.length > 0) {
+          setFeaturedEvent(data.data[0]);
+        } else {
+          setFeaturedEvent(null);
+        }
+      })
+      .catch(() => {
+        setFeaturedEvent(null);
+      });
+  }, []);
+
   return (
     <section className="relative min-h-[90vh] flex items-center justify-center pt-28 pb-16 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-slate-950 via-indigo-950 to-slate-900 overflow-hidden">
       {/* Dynamic Animated Background Glows */}
@@ -70,8 +89,7 @@ export const HeroSection: React.FC = () => {
             transition={{ duration: 0.6, delay: 0.2 }}
             className="text-base sm:text-lg text-slate-300 max-w-2xl mx-auto lg:mx-0 leading-relaxed font-normal"
           >
-            From premier tech summits to university fests and musical evenings.
-            Seamless bookings, instant cryptographically secure QR admissions, and powerful real-time organizer telemetry.
+            Seamless bookings, instant cryptographically secure QR admissions, and powerful real-time organizer telemetry for your community.
           </motion.p>
 
           <motion.div
@@ -112,13 +130,13 @@ export const HeroSection: React.FC = () => {
               <span>Instant QR Generation</span>
             </div>
             <span>•</span>
-            <div>Zero Processing Delays</div>
+            <div>Real-Time Telemetry</div>
             <span>•</span>
-            <div>Enterprise Multitenancy</div>
+            <div>Tenant Isolation</div>
           </motion.div>
         </div>
 
-        {/* Right Column: Floating Interactive Mock Event Card */}
+        {/* Right Column: Floating Interactive Card */}
         <div className="lg:col-span-5 relative flex justify-center">
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
@@ -126,7 +144,6 @@ export const HeroSection: React.FC = () => {
             transition={{ duration: 0.7, delay: 0.2 }}
             className="relative w-full max-w-md"
           >
-            {/* Animated card hovering float */}
             <motion.div
               animate={{
                 y: [0, -12, 0],
@@ -138,67 +155,124 @@ export const HeroSection: React.FC = () => {
               }}
               className="bg-slate-900/90 border border-slate-700/60 rounded-3xl p-6 shadow-2xl backdrop-blur-xl relative overflow-hidden"
             >
-              {/* Badge */}
-              <div className="flex justify-between items-center mb-4">
-                <span className="px-3 py-1 bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 text-xs font-semibold rounded-full flex items-center space-x-1">
-                  <Ticket className="w-3.5 h-3.5 mr-1" />
-                  Featured Event
-                </span>
-                <span className="text-xs font-semibold text-emerald-400 flex items-center space-x-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1" />
-                  Booking Live
-                </span>
-              </div>
-
-              {/* Event Preview Content */}
-              <div className="h-44 rounded-2xl overflow-hidden relative mb-5 bg-gradient-to-tr from-indigo-900 via-slate-800 to-indigo-950">
-                <img
-                  src="https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800&auto=format&fit=crop&q=80"
-                  alt="NextGen Tech Summit"
-                  className="w-full h-full object-cover opacity-80 mix-blend-luminosity hover:mix-blend-normal transition-all duration-500"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent" />
-                <div className="absolute bottom-3 left-3 right-3 flex justify-between items-end">
-                  <div className="text-white text-xs font-semibold bg-black/50 backdrop-blur-md px-2.5 py-1 rounded-lg">
-                    Tech & Innovation
+              {featuredEvent ? (
+                <>
+                  <div className="flex justify-between items-center mb-4">
+                    <span className="px-3 py-1 bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 text-xs font-semibold rounded-full flex items-center space-x-1">
+                      <Ticket className="w-3.5 h-3.5 mr-1" />
+                      Featured Event
+                    </span>
+                    <span className="text-xs font-semibold text-emerald-400 flex items-center space-x-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1" />
+                      Booking Live
+                    </span>
                   </div>
-                  <div className="text-sm font-black text-amber-300 bg-amber-950/70 border border-amber-500/30 px-3 py-1 rounded-lg">
-                    $49.00
+
+                  <div className="h-44 rounded-2xl overflow-hidden relative mb-5 bg-gradient-to-tr from-indigo-900 via-slate-800 to-indigo-950">
+                    <img
+                      src={featuredEvent.imageUrl || 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800&auto=format&fit=crop&q=80'}
+                      alt={featuredEvent.title}
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent" />
+                    <div className="absolute bottom-3 left-3 right-3 flex justify-between items-end">
+                      <div className="text-white text-xs font-semibold bg-black/50 backdrop-blur-md px-2.5 py-1 rounded-lg">
+                        {featuredEvent.category}
+                      </div>
+                      <div className="text-sm font-black text-amber-300 bg-amber-950/70 border border-amber-500/30 px-3 py-1 rounded-lg">
+                        {featuredEvent.price === 0 ? 'FREE' : `$${featuredEvent.price}`}
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </div>
 
-              <h3 className="text-xl font-bold text-white mb-2">
-                NextGen AI & Cloud Summit 2026
-              </h3>
-              <p className="text-xs text-slate-300 line-clamp-2 mb-4">
-                Join 500+ creators, cloud architects, and engineers for keynote talks, live hack demos, and exclusive networking.
-              </p>
+                  <h3 className="text-xl font-bold text-white mb-2 line-clamp-1">
+                    {featuredEvent.title}
+                  </h3>
+                  <p className="text-xs text-slate-300 line-clamp-2 mb-4">
+                    {featuredEvent.description}
+                  </p>
 
-              <div className="space-y-2 text-xs text-slate-300 border-t border-slate-800 pt-4">
-                <div className="flex items-center space-x-2">
-                  <Calendar className="w-4 h-4 text-indigo-400" />
-                  <span>October 14, 2026 • 09:30 AM</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <MapPin className="w-4 h-4 text-rose-400" />
-                  <span>Grand Convention Arena, San Francisco</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Users className="w-4 h-4 text-emerald-400" />
-                  <span>380 / 450 Tickets Claimed</span>
-                </div>
-              </div>
+                  <div className="space-y-2 text-xs text-slate-300 border-t border-slate-800 pt-4">
+                    <div className="flex items-center space-x-2">
+                      <Calendar className="w-4 h-4 text-indigo-400" />
+                      <span>{new Date(featuredEvent.date).toLocaleDateString()} • {featuredEvent.time}</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <MapPin className="w-4 h-4 text-rose-400" />
+                      <span className="truncate">{featuredEvent.venue}, {featuredEvent.city}</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Users className="w-4 h-4 text-emerald-400" />
+                      <span>{featuredEvent.ticketsSold} / {featuredEvent.capacity} Claimed</span>
+                    </div>
+                  </div>
 
-              <div className="mt-5 pt-3">
-                <Link
-                  to="/discover"
-                  className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs rounded-xl flex items-center justify-center space-x-2 transition-colors shadow-md shadow-indigo-600/30"
-                >
-                  <span>Reserve Seat With Instant Pass</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </Link>
-              </div>
+                  <div className="mt-5 pt-3">
+                    <Link
+                      to="/discover"
+                      className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs rounded-xl flex items-center justify-center space-x-2 transition-colors shadow-md shadow-indigo-600/30"
+                    >
+                      <span>Reserve Seat With Instant Pass</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </Link>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="flex justify-between items-center mb-4">
+                    <span className="px-3 py-1 bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 text-xs font-semibold rounded-full flex items-center space-x-1">
+                      <Sparkles className="w-3.5 h-3.5 mr-1 text-amber-400" />
+                      Live Platform
+                    </span>
+                    <span className="text-xs font-semibold text-emerald-400 flex items-center space-x-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1" />
+                      Ready for Events
+                    </span>
+                  </div>
+
+                  <div className="h-44 rounded-2xl overflow-hidden relative mb-5 bg-gradient-to-tr from-indigo-900 via-slate-800 to-indigo-950 flex items-center justify-center p-6 text-center">
+                    <div>
+                      <div className="w-12 h-12 rounded-2xl bg-indigo-600/40 border border-indigo-400/30 flex items-center justify-center mx-auto mb-2 text-indigo-300">
+                        <Ticket className="w-6 h-6" />
+                      </div>
+                      <p className="text-white text-sm font-bold">Your Live Community Events</p>
+                      <p className="text-slate-300 text-xs mt-1">Direct booking & instant admission QR passes</p>
+                    </div>
+                  </div>
+
+                  <h3 className="text-xl font-bold text-white mb-2">
+                    Host Your First Community Event
+                  </h3>
+                  <p className="text-xs text-slate-300 mb-4">
+                    Register your organization workspace, publish real events, and start issuing digital tickets to your community.
+                  </p>
+
+                  <div className="space-y-2 text-xs text-slate-300 border-t border-slate-800 pt-4">
+                    <div className="flex items-center space-x-2">
+                      <ShieldCheck className="w-4 h-4 text-indigo-400" />
+                      <span>Dynamic Workspace Management</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Ticket className="w-4 h-4 text-emerald-400" />
+                      <span>Instant Digital Passes & QR Verification</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Users className="w-4 h-4 text-amber-400" />
+                      <span>Real-Time Attendee Roster & Analytics</span>
+                    </div>
+                  </div>
+
+                  <div className="mt-5 pt-3">
+                    <Link
+                      to="/login"
+                      className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs rounded-xl flex items-center justify-center space-x-2 transition-colors shadow-md shadow-indigo-600/30"
+                    >
+                      <span>Register Organization / Workspace</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </Link>
+                  </div>
+                </>
+              )}
             </motion.div>
           </motion.div>
         </div>

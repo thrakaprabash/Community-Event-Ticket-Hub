@@ -1,4 +1,4 @@
-﻿import { Router, Request, Response } from 'express';
+import { Router, Request, Response } from 'express';
 import QRCode from 'qrcode';
 import { Ticket } from '../models/Ticket.js';
 import { Event } from '../models/Event.js';
@@ -42,7 +42,15 @@ ticketsRouter.post('/', async (req: Request, res: Response) => {
       date: event.date
     });
 
-    const qrDataUrl = await QRCode.toDataURL(qrPayload);
+    const qrDataUrl = await QRCode.toDataURL(qrPayload, {
+      errorCorrectionLevel: 'M',
+      margin: 2,
+      width: 320,
+      color: {
+        dark: '#0f172a',
+        light: '#ffffff'
+      }
+    });
 
     const ticket = new Ticket({
       eventId: event._id,
@@ -118,5 +126,33 @@ ticketsRouter.get('/org/attendees', verifyAsgardeoToken, requireOrgScope, async 
     res.json({ success: true, data: attendees });
   } catch (error) {
     res.status(500).json({ success: false, message: 'Error fetching organizer attendees' });
+  }
+});
+
+// GET /api/tickets/verify/:code - Verify ticket admission by ticket ID or code
+ticketsRouter.get('/verify/:code', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { code } = req.params;
+    let ticket = null;
+    const isValidObjectId = /^[0-9a-fA-F]{24}$/.test(code);
+    if (isValidObjectId) {
+      ticket = await Ticket.findById(code).populate('eventId');
+    }
+    if (!ticket) {
+      ticket = await Ticket.findOne({ userId: code }).populate('eventId');
+    }
+
+    if (!ticket) {
+      res.status(404).json({ success: false, message: 'Ticket pass not found or invalid' });
+      return;
+    }
+
+    res.json({
+      success: true,
+      message: 'Valid admission ticket',
+      data: ticket
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Ticket verification failed' });
   }
 });
