@@ -1,12 +1,24 @@
-import mongoose from 'mongoose';
+﻿import mongoose from 'mongoose';
+
+let isConnected = false;
 
 export const connectDB = async (): Promise<void> => {
+  if (isConnected && mongoose.connection.readyState === 1) {
+    return;
+  }
+
   try {
     const mongoUri = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/eventhub';
-    await mongoose.connect(mongoUri);
+    const conn = await mongoose.connect(mongoUri, {
+      bufferCommands: false,
+    });
+    isConnected = !!conn.connections[0].readyState;
     console.log(`[MongoDB] Connected successfully to ${mongoose.connection.host}`);
   } catch (error) {
     console.error('[MongoDB] Connection error:', error);
-    process.exit(1);
+    // In serverless environment, do not process.exit(1) to allow retries on subsequent invocations
+    if (process.env.NODE_ENV !== 'production') {
+      process.exit(1);
+    }
   }
 };

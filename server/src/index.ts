@@ -1,11 +1,10 @@
-import express from 'express';
+﻿import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import { connectDB } from './config/db.js';
 import { eventsRouter } from './routes/events.js';
 import { ticketsRouter } from './routes/tickets.js';
 import { analyticsRouter } from './routes/analytics.js';
-import { organizationsRouter } from './routes/organizations.js';
 
 dotenv.config();
 
@@ -34,7 +33,13 @@ app.use(
 
 app.use(express.json());
 
-// Health Check endpoint (required for Render runtime probes)
+// Ensure DB is connected before handling any API request (Serverless & Long-running safe)
+app.use(async (_req, _res, next) => {
+  await connectDB();
+  next();
+});
+
+// Health Check endpoint
 app.get('/health', (_req, res) => {
   res.status(200).json({ status: 'healthy', timestamp: new Date().toISOString() });
 });
@@ -53,16 +58,17 @@ app.get('/', (_req, res) => {
 app.use('/api/events', eventsRouter);
 app.use('/api/tickets', ticketsRouter);
 app.use('/api/analytics', analyticsRouter);
-app.use('/api/organizations', organizationsRouter);
 
 // Global 404 Handler
 app.use((_req, res) => {
   res.status(404).json({ success: false, message: 'Resource not found' });
 });
 
-// Connect to DB and Start Server
-connectDB().then(() => {
+// Start listening only in standalone/local environments
+if (process.env.NODE_ENV !== 'production' || process.env.STANDALONE === 'true') {
   app.listen(PORT, () => {
     console.log(`[Server] Community Event Ticket Hub API running on port ${PORT}`);
   });
-});
+}
+
+export default app;

@@ -16,7 +16,7 @@ Built with **React (TypeScript)**, **TailwindCSS**, **Express (TypeScript)**, an
   - 🍩 Category distribution donut chart
   - 📋 Real-time attendee gate check-in roster
 - **Multi-Tenant Organization Workspaces**: Isolated tenant workspaces for different event organizers (e.g. *TechConf Global*, *SoundWave Productions*, *University Council*).
-- **Vercel & Render.com Deployments**: Pre-configured with `vercel.json` for frontend and `render.yaml` for backend deployment with automated GitHub CI/CD on every push.
+- **100% Vercel Serverless Ready**: Both Frontend and Backend configured for instant deployment on Vercel with zero idle cold-sleeps.
 
 ---
 
@@ -61,37 +61,35 @@ Visit **`http://localhost:5173`** in your browser.
 
 ---
 
-## 🏢 Multi-Tenant Workspace & Authentication
+## 🌐 Deploying Frontend & Backend to Vercel (Step-by-Step)
 
-The application features workspace tenant isolation. Organizers can authenticate into their dedicated workspace to view only their organization's events, revenues, and attendees. 
-
-1. **Development Mode**: Click any organization profile (*TechConf Global*, *SoundWave Productions*, *University Council*) on the sign-in page to test tenant switching instantly.
-2. **Production Mode (Optional Asgardeo/OIDC)**: Configure `ASGARDEO_JWKS_URI` in `server/.env` with your OAuth2 JWKS endpoint to cryptographically validate live JWT tokens.
+You deploy this project to Vercel as **two separate projects** from the same GitHub repo:
 
 ---
 
-## 🌐 Deployment Guide (Vercel + Render.com)
-
-### 1. Deploy Backend to Render.com (Free Tier)
-1. Go to [render.com](https://render.com) and create a **New Web Service**.
-2. Connect your GitHub repository.
-3. Settings:
-   - **Root Directory**: `server`
-   - **Build Command**: `npm install && npm run build`
-   - **Start Command**: `node dist/index.js`
-4. Add Environment Variables in the Render dashboard:
-   - `MONGODB_URI`: Your MongoDB Atlas connection string
-   - `NODE_ENV`: `production`
-   - `CLIENT_ORIGIN`: Your Vercel frontend URL (e.g., `https://your-project.vercel.app`)
-5. Copy your Render service URL (e.g., `https://event-hub-api.onrender.com`).
-
-### 2. Deploy Frontend to Vercel
+### Step 1: Deploy Backend to Vercel
 1. Go to [vercel.com](https://vercel.com) and click **Add New Project**.
-2. Import this GitHub repository.
-3. Settings:
-   - **Root Directory**: `client`
-   - **Framework Preset**: Vite
-4. Add Environment Variable in the Vercel dashboard:
-   - `VITE_API_BASE_URL`: `https://event-hub-api.onrender.com/api` (your Render URL + `/api`)
-   - `VITE_REDIRECT_URL`: `https://your-project.vercel.app`
-5. Click **Deploy**. Vercel will build the frontend and provide your live URL.
+2. Import your GitHub repository.
+3. Configure:
+   - **Project Name**: `event-hub-api` (or any name you like)
+   - **Root Directory**: Click *Edit* and select **`server`**
+   - **Framework Preset**: *Other*
+4. Add **Environment Variables**:
+   - `MONGODB_URI`: `<your MongoDB Atlas connection string>`
+   - `NODE_ENV`: `production`
+5. Click **Deploy**.
+6. Copy your live Backend URL (e.g., `https://event-hub-api.vercel.app`).
+
+---
+
+### Step 2: Deploy Frontend to Vercel
+1. Go to [vercel.com](https://vercel.com) and click **Add New Project**.
+2. Import the same GitHub repository.
+3. Configure:
+   - **Project Name**: `event-hub-web` (or any name you like)
+   - **Root Directory**: Click *Edit* and select **`client`**
+   - **Framework Preset**: *Vite*
+4. Add **Environment Variables**:
+   - `VITE_API_BASE_URL`: `https://event-hub-api.vercel.app/api` *(Your backend URL from Step 1 + `/api`)*
+5. Click **Deploy**.
+6. Your full platform is now live on Vercel! 🎉
