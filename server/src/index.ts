@@ -12,26 +12,22 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// CORS setup for local dev, Vercel frontend, and production
-const allowedOrigins = [
-  'http://localhost:5173',
-  'http://localhost:3000',
-  process.env.CLIENT_ORIGIN
-].filter(Boolean) as string[];
+// Universal Permissive CORS & Preflight Handler for Vercel Serverless
+app.use((req, res, next) => {
+  const origin = req.headers.origin || '*';
+  res.setHeader('Access-Control-Allow-Origin', origin);
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With, Content-Type, Accept, Authorization, Cache-Control');
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
 
-app.use(
-  cors({
-    origin: (origin, callback) => {
-      // allow requests with no origin or matching configured origins / vercel previews
-      if (!origin || allowedOrigins.includes(origin) || origin.endsWith('.vercel.app')) {
-        return callback(null, true);
-      }
-      return callback(null, true); // Permissive for demo
-    },
-    credentials: true
-  })
-);
+  if (req.method === 'OPTIONS') {
+    res.status(200).end();
+    return;
+  }
+  next();
+});
 
+app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
 
 // Ensure DB is connected before handling any API request
