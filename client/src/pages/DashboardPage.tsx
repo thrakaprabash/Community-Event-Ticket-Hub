@@ -9,7 +9,8 @@ import {
   Building2,
   Calendar,
   Layers,
-  X
+  X,
+  Image as ImageIcon
 } from 'lucide-react';
 import {
   ResponsiveContainer,
@@ -55,7 +56,8 @@ export const DashboardPage: React.FC = () => {
     venue: '',
     city: 'Colombo',
     capacity: 100,
-    price: 0
+    price: 0,
+    imageUrl: ''
   });
 
   useEffect(() => {
@@ -508,6 +510,70 @@ export const DashboardPage: React.FC = () => {
                     onChange={(e) => setNewEvent({ ...newEvent, price: Number(e.target.value) })}
                     className="w-full px-3 py-2 border border-slate-300 rounded-lg outline-none"
                   />
+                </div>
+              </div>
+
+              <div>
+                <label className="block font-semibold text-slate-700 mb-1 flex items-center justify-between">
+                  <span className="flex items-center space-x-1.5">
+                    <ImageIcon className="w-3.5 h-3.5 text-indigo-600" />
+                    <span>Event Cover Image</span>
+                  </span>
+                  <span className="text-[10px] text-slate-400 font-normal">URL or upload file</span>
+                </label>
+                <div className="space-y-2">
+                  <input
+                    type="url"
+                    value={newEvent.imageUrl}
+                    onChange={(e) => setNewEvent({ ...newEvent, imageUrl: e.target.value })}
+                    placeholder="https://images.unsplash.com/... or paste image link"
+                    className="w-full px-3 py-2 border border-slate-300 rounded-lg outline-none text-xs"
+                  />
+
+                  <div className="flex items-center space-x-2">
+                    <label className="cursor-pointer inline-flex items-center space-x-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-medium border border-slate-300 transition-colors">
+                      <ImageIcon className="w-3.5 h-3.5 text-slate-500" />
+                      <span>Upload local image</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            const reader = new FileReader();
+                            reader.onloadend = () => {
+                              setNewEvent({ ...newEvent, imageUrl: reader.result as string });
+                            };
+                            reader.readAsDataURL(file);
+                          }
+                        }}
+                      />
+                    </label>
+                    {newEvent.imageUrl && (
+                      <button
+                        type="button"
+                        onClick={() => setNewEvent({ ...newEvent, imageUrl: '' })}
+                        className="text-[11px] text-red-500 hover:underline"
+                      >
+                        Remove image
+                      </button>
+                    )}
+                  </div>
+
+                  {newEvent.imageUrl && (
+                    <div className="relative w-full h-28 rounded-lg overflow-hidden border border-slate-200 bg-slate-50">
+                      <img
+                        src={newEvent.imageUrl}
+                        alt="Preview"
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src =
+                            'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=1200&auto=format&fit=crop&q=80';
+                        }}
+                      />
+                    </div>
+                  )}
                 </div>
               </div>
 

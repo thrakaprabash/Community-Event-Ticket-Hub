@@ -1,9 +1,34 @@
-﻿import dotenv from 'dotenv';
+import dotenv from 'dotenv';
 import mongoose from 'mongoose';
 import { Event } from './models/Event.js';
 import { Ticket } from './models/Ticket.js';
+import { Organization } from './models/Organization.js';
 
 dotenv.config();
+
+const sampleOrganizations = [
+  {
+    orgId: 'org-techconf',
+    name: 'TechConf Global Ltd',
+    description: 'Tech meetups, developer summits & software hackathons',
+    category: 'Tech',
+    contactEmail: 'organizer@techconf.io'
+  },
+  {
+    orgId: 'org-soundwave',
+    name: 'SoundWave Productions',
+    description: 'Concerts, beachside acoustic nights & outdoor musical festivals',
+    category: 'Music',
+    contactEmail: 'soundwave@events.com'
+  },
+  {
+    orgId: 'org-unicouncil',
+    name: 'University Student Council',
+    description: 'Campus 5K charity walks, collegiate codeathons & club gatherings',
+    category: 'University',
+    contactEmail: 'council@university.edu'
+  }
+];
 
 const sampleEvents = [
   {
@@ -118,7 +143,11 @@ async function seed() {
 
     await Event.deleteMany({});
     await Ticket.deleteMany({});
-    console.log('[Seed] Cleared existing events and tickets');
+    await Organization.deleteMany({});
+    console.log('[Seed] Cleared existing events, tickets, and organizations');
+
+    await Organization.insertMany(sampleOrganizations);
+    console.log(`[Seed] Successfully inserted ${sampleOrganizations.length} initial organizations`);
 
     const createdEvents = await Event.insertMany(sampleEvents);
     console.log(`[Seed] Successfully inserted ${createdEvents.length} events`);

@@ -1,4 +1,4 @@
-﻿export interface EventItem {
+export interface EventItem {
   _id: string;
   title: string;
   description: string;
@@ -36,4 +36,13 @@ export interface AnalyticsSummary {
   totalRevenue: number;
   uniqueAttendees: number;
   occupancyRate: number;
+}
+
+export interface OrganizationItem {
+  _id?: string;
+  orgId: string;
+  name: string;
+  description: string;
+  category?: string;
+  contactEmail?: string;
 }

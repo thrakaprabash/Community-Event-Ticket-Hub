@@ -1,4 +1,4 @@
-﻿import { Request, Response, NextFunction } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import { createRemoteJWKSet, jwtVerify } from 'jose';
 
 export interface AuthenticatedRequest extends Request {
@@ -44,8 +44,8 @@ export const verifyAsgardeoToken = async (
     req.user = {
       sub: 'mock-user-123',
       email: 'organizer@hub.local',
-      org_id: orgId || 'org-techconf',
-      org_name: orgId === 'org-techconf' ? 'TechConf Inc' : 'University Events Hub',
+      org_id: orgId,
+      org_name: req.headers['x-org-name'] ? decodeURIComponent(req.headers['x-org-name'] as string) : orgId,
       roles: ['org-admin']
     };
     next();

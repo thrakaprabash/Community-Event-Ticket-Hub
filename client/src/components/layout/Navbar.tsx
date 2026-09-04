@@ -1,17 +1,35 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Ticket, Calendar, ShieldCheck, LogOut, ChevronDown } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { OrganizationItem } from '../../types';
+import { API_BASE_URL } from '../../config';
 
 export const Navbar: React.FC = () => {
   const { isAuthenticated, user, logout, switchOrganization } = useAuth();
   const navigate = useNavigate();
 
-  const orgList = [
+  const [orgList, setOrgList] = useState<{ id: string; name: string }[]>([
     { id: 'org-techconf', name: 'TechConf Global Ltd' },
     { id: 'org-soundwave', name: 'SoundWave Productions' },
     { id: 'org-unicouncil', name: 'University Student Council' }
-  ];
+  ]);
+
+  useEffect(() => {
+    fetch(`${API_BASE_URL}/organizations`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && Array.isArray(data.data) && data.data.length > 0) {
+          setOrgList(
+            data.data.map((o: OrganizationItem) => ({
+              id: o.orgId,
+              name: o.name,
+            }))
+          );
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   return (
     <header className="sticky top-0 z-40 bg-white/95 backdrop-blur border-b border-slate-200">
