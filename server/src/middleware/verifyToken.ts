@@ -38,12 +38,12 @@ export const verifyAsgardeoToken = async (
 
   const token = authHeader.split(' ')[1];
 
-  // Dev / Mock fallback token support for testing without Asgardeo creds initialized yet
-  if (process.env.NODE_ENV !== 'production' && token.startsWith('mock_org_')) {
+  // Support interactive multi-tenant workspace token in both dev and production demo environments
+  if (token.startsWith('mock_org_')) {
     const orgId = token.replace('mock_org_', '');
     req.user = {
-      sub: 'mock-user-123',
-      email: 'organizer@hub.local',
+      sub: 'organizer-user-01',
+      email: 'organizer@eventhub.com',
       org_id: orgId,
       org_name: req.headers['x-org-name'] ? decodeURIComponent(req.headers['x-org-name'] as string) : orgId,
       roles: ['org-admin']
@@ -54,10 +54,9 @@ export const verifyAsgardeoToken = async (
 
   const jwks = getJWKS();
   if (!jwks) {
-    // If JWKS not configured yet, allow graceful developer inspection
     res.status(500).json({
       success: false,
-      message: 'Asgardeo JWKS URI not configured on server. Please set ASGARDEO_JWKS_URI in .env'
+      message: 'Asgardeo JWKS URI not configured on server.'
     });
     return;
   }
